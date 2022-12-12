@@ -27,7 +27,7 @@ export const SignupController = async (req, res, next) => {
   if (existUser) {
     next({
       status: 422,
-      message: "sorry no user found",
+      message: "sorry user already exists",
     });
     return;
   }
@@ -86,7 +86,7 @@ export const ConfirmOtpController = async (req, res, next) => {
 
   // check if otp time is valid or expired
 
-  if (!timeValidation(foundUser.validation.genratedTime, 5)) {
+  if (!timeValidation(foundUser.validation.genratedTime, 15)) {
     next({
       status: 422,
       message: "entered otp is expired",
@@ -159,7 +159,7 @@ export const LoginController = async (req, res, next) => {
   // genrate tokne send response
 
   const user = await User.findById(foundUser._id).select(
-    "-password -createdAt -updatedAt"
+    "-password -createdAt -updatedAt -validation"
   );
 
   res.json({
@@ -172,12 +172,22 @@ export const LoginController = async (req, res, next) => {
 // @Route : /forgot-password
 // @Method : POST
 // @Body : { email  }
-// @Response : validated
+// @Response : user_id
 // *incomplete : send otp in email
 
 export const ForgotPasswordController = async (req, res, next) => {
   // find the user with email
   // set the validation otp and genarted time
+
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    next({
+      status: 422,
+      message: errors.array()[0].msg,
+    });
+    return;
+  }
+
   const foundUser = await User.findOne({ email: req.body.email });
   if (!foundUser) {
     next({
@@ -189,6 +199,7 @@ export const ForgotPasswordController = async (req, res, next) => {
 
   // genarte otp
   const genartedOtp = genrateOtp();
+  console.log(genartedOtp);
   foundUser.validation = {
     otp: genartedOtp,
     genratedTime: Date.now(),
@@ -210,6 +221,15 @@ export const ForgotPasswordController = async (req, res, next) => {
 // @Incomplate : check if the passwor is hashed or not
 
 export const ChangePasswordController = async (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    next({
+      status: 422,
+      message: errors.array()[0].msg,
+    });
+    return;
+  }
+
   const { password, user_id } = req.body;
 
   // find the user
@@ -224,7 +244,7 @@ export const ChangePasswordController = async (req, res, next) => {
     });
   }
 
-  if (!timeValidation(updateUser.validation.forgotpassword, 5)) {
+  if (!timeValidation(updateUser.validation.forgotpassword, 20)) {
     return next({
       status: 422,
       message: "time expire for updating password",
@@ -239,4 +259,46 @@ export const ChangePasswordController = async (req, res, next) => {
     status: "ok",
     password_updated: true,
   });
+};
+
+// @Route : /resend-otp
+// @Method : POST
+// @Body : { user_id  }
+// @Response : send
+
+export const ResendPasswordController = async (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    next({
+      status: 422,
+      message: errors.array()[0].msg,
+    });
+    return;
+  }
+
+  const user_id = req.body.user_id;
+
+  try {
+    const foundUser = await User.findById(user_id);
+
+    if (foundUser && foundUser.validation?.otp) {
+      // resend the otp in email
+      console.log(foundUser.validation.otp);
+      foundUser.validation.genratedTime = Date.now();
+      foundUser.save();
+      res.json({
+        send: true,
+      });
+      return;
+    }
+
+    return next({
+      status: 422,
+      message: "user has not requested for OTP",
+    });
+  } catch (error) {
+    next({
+      message: error.message,
+    });
+  }
 };

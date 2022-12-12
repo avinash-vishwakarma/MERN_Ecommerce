@@ -3,9 +3,20 @@ import { Icon } from "@iconify/react";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import ReactDOM from "react-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { authActions } from "../../store/slice/auth-slice";
 
 const NavBar = () => {
   const [showNav, setShowNav] = useState(false);
+  const isLogin = useSelector((state) => state.auth.isLogin);
+
+  const dipatch = useDispatch();
+
+  const LogoutHandler = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user_info");
+    dipatch(authActions.logout());
+  };
 
   return (
     <>
@@ -59,11 +70,14 @@ const NavBar = () => {
                   <i className="bi bi-house-door"></i> Home
                 </Link>
               </li>
-              <li>
-                <Link to="/login">
-                  <Icon icon="material-symbols:login" /> Login / Singup
-                </Link>
-              </li>
+              {!isLogin && (
+                <li>
+                  <Link to="/login">
+                    <Icon icon="material-symbols:login" /> Login / Singup
+                  </Link>
+                </li>
+              )}
+
               <li>
                 <Link>
                   <i className="bi bi-collection"></i> Pages
@@ -111,11 +125,14 @@ const NavBar = () => {
                   </div>
                 </div>
               </li>
-              <li>
-                <Link>
-                  <i className="bi bi-box-arrow-right"></i> Logout
-                </Link>
-              </li>
+
+              {isLogin && (
+                <li>
+                  <Link onClick={LogoutHandler}>
+                    <i className="bi bi-box-arrow-right"></i> Logout
+                  </Link>
+                </li>
+              )}
             </ul>
 
             <div className="social-info-wrap">

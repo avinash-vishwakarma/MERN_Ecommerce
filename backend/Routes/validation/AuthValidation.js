@@ -31,3 +31,5 @@ export const ChangePasswordValidation = [
   ),
   body("user_id").exists(),
 ];
+
+export const ResendPasswordValidation = [body("user_id").exists()];

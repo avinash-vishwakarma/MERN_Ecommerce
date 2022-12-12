@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 const PageNotFound = () => {
   return (
@@ -13,9 +14,13 @@ const PageNotFound = () => {
             <p className="mb-4">
               We couldn't find any results for your search. Try again.
             </p>
-            <a className="btn btn-creative btn-danger" href="page-home.html">
+            <Link
+              to="/"
+              className="btn btn-creative btn-danger"
+              href="page-home.html"
+            >
               Go to Home
-            </a>
+            </Link>
           </div>
         </div>
       </div>

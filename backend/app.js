@@ -12,7 +12,7 @@ import { GlobalErrorHandler } from "./Controllers/ErrorController.js";
 dotenv.config();
 app.use(bodyParser.json());
 app.use(GenralRoutes);
-app.use(AuthRoutes);
+app.use("/api", AuthRoutes);
 app.use(ErrorRoutes);
 app.use(GlobalErrorHandler);
 

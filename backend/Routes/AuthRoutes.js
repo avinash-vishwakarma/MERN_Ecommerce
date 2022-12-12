@@ -4,6 +4,7 @@ import {
   ConfirmOtpController,
   ForgotPasswordController,
   LoginController,
+  ResendPasswordController,
   SignupController,
 } from "../Controllers/AuthController.js";
 import {
@@ -11,6 +12,7 @@ import {
   ConfromOtpValidation,
   ForgotPasswordValidation,
   LoginValidation,
+  ResendPasswordValidation,
   SignupValidation,
 } from "./validation/AuthValidation.js";
 const app = express.Router();
@@ -29,5 +31,7 @@ app.post(
   ChangePasswordValidation,
   ChangePasswordController
 );
+
+app.post("/resend-otp", ResendPasswordValidation, ResendPasswordController);
 
 export default app;

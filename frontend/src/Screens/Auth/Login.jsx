@@ -1,13 +1,18 @@
 import React from "react";
 import { useState } from "react";
 import axios from "axios";
+import { Link, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { loginUserAction } from "../../store/slice/auth-actions";
 
 const Login = () => {
   const [emailInput, setEmailInput] = useState("");
   const [passwordInput, setPasswordInput] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
-  const LoginSubmitHandler = (e) => {
+  const LoginSubmitHandler = async (e) => {
     e.preventDefault();
     // get all the value and send to the backend
 
@@ -15,9 +20,20 @@ const Login = () => {
       emailInput &&
       emailInput.includes("@") &&
       passwordInput &&
-      passwordInput.length >= 4
+      passwordInput.length >= 8
     ) {
-      axios.post("");
+      try {
+        const response = await axios.post("/api/login", {
+          email: emailInput,
+          password: passwordInput,
+        });
+        dispatch(loginUserAction(response.data.user, response.data.token));
+        navigate("/", {
+          replace: true,
+        });
+      } catch (error) {
+        console.log(error);
+      }
     }
   };
 
@@ -72,12 +88,17 @@ const Login = () => {
           </div>
 
           <div className="login-meta-data text-center">
-            <a className="stretched-link forgot-password d-block mt-3 mb-1">
+            <Link
+              to={"/forgot-password"}
+              className="stretched-link forgot-password d-block mt-3 mb-1"
+            >
               Forgot Password?
-            </a>
+            </Link>
             <p className="mb-0">
-              Didn't have an account?{" "}
-              <a className="stretched-link">Register Now</a>
+              Didn't have an account?
+              <Link to="/signup" className="stretched-link">
+                Register
+              </Link>
             </p>
           </div>
         </div>
